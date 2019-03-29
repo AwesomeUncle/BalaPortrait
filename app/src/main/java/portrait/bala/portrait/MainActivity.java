@@ -17,7 +17,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -28,7 +27,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "MainActivity";
 
     /* 头像文件 */
     private static final String IMAGE_FILE_NAME = "temp_head_image.jpg";
@@ -42,43 +40,42 @@ public class MainActivity extends AppCompatActivity {
     private static int output_X = 480;
     private static int output_Y = 480;
     //改变头像的标记位
-    private int new_icon = 0xa3;
+    private int new_icon=0xa3;
     private ImageView headImage = null;
     private String mExtStorDir;
     private Uri mUriPath;
 
-    private final int PERMISSION_READ_AND_CAMERA = 0;//读和相机权限
-    private final int PERMISSION_READ = 1;//读取权限
-
+    private final int PERMISSION_READ_AND_CAMERA =0;//读和相机权限
+    private final int PERMISSION_READ =1;//读取权限
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mExtStorDir = Environment.getExternalStorageDirectory().toString();
-        Log.e(TAG, "onCreate: " + mExtStorDir);
-        headImage = findViewById(R.id.imageView);
+        headImage = (ImageView) findViewById(R.id.imageView);
 
-        Button buttonLocal = findViewById(R.id.buttonLocal);
-
-
+        Button buttonLocal = (Button) findViewById(R.id.buttonLocal);
         buttonLocal.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
+//                choseHeadImageFromGallery();
                 checkReadPermission();
 
             }
         });
 
-        Button buttonCamera = findViewById(R.id.buttonCamera);
+        Button buttonCamera = (Button) findViewById(R.id.buttonCamera);
         buttonCamera.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
+//                choseHeadImageFromCameraCapture();
                 checkStoragePermission();//检查是否有权限
             }
         });
     }
+
 
 
     // 从本地相册选取图片作为头像
@@ -99,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     private void choseHeadImageFromCameraCapture() {
         String savePath = mExtStorDir;
 
-        Intent intent;
+        Intent intent = null;
         // 判断存储卡是否可以用，可用进行存储
 
         if (hasSdcard()) {
@@ -113,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-                pictureUri = FileProvider.getUriForFile(this, getPackageName() + ".fileProvider", pictureFile);
+                pictureUri = FileProvider.getUriForFile(this, getPackageName()+".fileProvider", pictureFile);
     /*ContentValues contentValues = new ContentValues(1);
     contentValues.put(MediaStore.Images.Media.DATA, pictureFile.getAbsolutePath());
     pictureUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);*/
@@ -143,9 +140,9 @@ public class MainActivity extends AppCompatActivity {
         String filePath = imageFile.getAbsolutePath();
         Cursor cursor = getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                new String[]{MediaStore.Images.Media._ID},
+                new String[] { MediaStore.Images.Media._ID },
                 MediaStore.Images.Media.DATA + "=? ",
-                new String[]{filePath}, null);
+                new String[] { filePath }, null);
 
         if (cursor != null && cursor.moveToFirst()) {
             int id = cursor.getInt(cursor
@@ -170,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 用户没有进行有效的设置操作，返回
         if (resultCode == RESULT_CANCELED) {
-            Toast.makeText(getApplication(), "您取消了选择", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplication(), "取消", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -199,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
                 }*/
                 try {
                     Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(mUriPath));
-                    setImageToHeadView(intent, bitmap);
+                    setImageToHeadView(intent,bitmap);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -214,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
         int result = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (result == PackageManager.PERMISSION_DENIED) {
             String[] permissions = {/*Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    ,*/Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
+                    ,*/Manifest.permission.CAMERA,Manifest.permission.READ_EXTERNAL_STORAGE};
             ActivityCompat.requestPermissions(this, permissions, PERMISSION_READ_AND_CAMERA);
         } else {
             choseHeadImageFromCameraCapture();
@@ -223,13 +220,11 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void checkReadPermission() {
-
         int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        int permission2 = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-        if (permission == PackageManager.PERMISSION_DENIED||permission2 == PackageManager.PERMISSION_DENIED) {
-            String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.CAMERA};
-            ActivityCompat.requestPermissions(this, permissions, PERMISSION_READ);
-        } else {
+        if (permission==PackageManager.PERMISSION_DENIED){
+            String[] permissions ={Manifest.permission.READ_EXTERNAL_STORAGE};
+            ActivityCompat.requestPermissions(this,permissions, PERMISSION_READ);
+        }else {
             choseHeadImageFromGallery();
         }
 
@@ -240,10 +235,10 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        switch (requestCode) {
+        switch (requestCode){
             case PERMISSION_READ_AND_CAMERA:
-                for (int i = 0; i < grantResults.length; i++) {
-                    if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                for (int i=0;i<grantResults.length;i++){
+                    if (grantResults[i]==PackageManager.PERMISSION_DENIED){
                         Toast.makeText(this, "why ??????", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -258,7 +253,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
     /**
      * 裁剪原始的图片
      */
@@ -298,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 提取保存裁剪之后的图片数据，并设置头像部分的View
      */
-    private void setImageToHeadView(Intent intent, Bitmap b) {
+    private void setImageToHeadView(Intent intent,Bitmap b) {
         /*Bundle extras = intent.getExtras();
         if (extras != null) {
             Bitmap photo = extras.getParcelable("data");
@@ -307,8 +301,8 @@ public class MainActivity extends AppCompatActivity {
         try {
             if (intent != null) {
 
-                Bitmap bitmap = imageZoom(b);//看个人需求，可以不压缩
-                headImage.setImageBitmap(bitmap);
+//                Bitmap bitmap = imageZoom(b);//看个人需求，可以不压缩
+                headImage.setImageBitmap(b);
 //                long millis = System.currentTimeMillis();
                 /*File file = FileUtil.saveFile(mExtStorDir, millis+CROP_IMAGE_FILE_NAME, bitmap);
                 if (file!=null){
@@ -344,13 +338,13 @@ public class MainActivity extends AppCompatActivity {
 
     private Bitmap imageZoom(Bitmap bitMap) {
         //图片允许最大空间   单位：KB
-        double maxSize = 1000.00;
+        double maxSize =1000.00;
         //将bitmap放至数组中，意在bitmap的大小（与实际读取的原文件要大）
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitMap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] b = baos.toByteArray();
         //将字节换成KB
-        double mid = b.length / 1024;
+        double mid = b.length/1024;
         //判断bitmap占用空间是否大于允许最大空间  如果大于则压缩 小于则不压缩
         if (mid > maxSize) {
             //获取bitmap大小 是允许最大大小的多少倍
